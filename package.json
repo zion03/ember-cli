@@ -147,6 +147,7 @@
   "devDependencies": {
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
+    "debug": "^2.1.0",
     "mocha": "^1.18.0",
     "mocha-jshint": "0.0.9",
     "node-require-timings": "0.0.2",

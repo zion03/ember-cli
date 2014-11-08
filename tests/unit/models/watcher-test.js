@@ -9,6 +9,7 @@ var Watcher = require('../../../lib/models/watcher');
 var EOL = require('os').EOL;
 var chalk = require('chalk');
 var BuildError = require('../../helpers/build-error');
+var Promise = require('../../../lib/ext/promise');
 
 describe('Watcher', function() {
   var ui;
@@ -46,6 +47,66 @@ describe('Watcher', function() {
     it('selects the polling watcher when given polling watcher option', function () {
       subject.options = { watcher: 'polling' };
       assert.ok(subject.polling());
+    });
+  });
+
+  describe('buildOptions', function() {
+    it('with polling enabled', function() {
+      subject.polling = function() { return true; };
+      subject.verbose = true;
+
+      return subject.buildOptions().then(function(options) {
+        assert.deepEqual(options, {
+          polling:  true,
+          verbose:  true,
+          watchman: false
+        });
+      });
+    });
+
+
+    it('with polling disabled, watchman false', function() {
+      subject.polling = function() { return false; };
+      subject.verbose = true;
+
+      subject.exec = function() { return Promise.reject(); };
+
+      return subject.buildOptions().then(function(options) {
+        assert.deepEqual(options, {
+          polling:  false,
+          verbose:  true,
+          watchman: false
+        });
+      });
+    });
+
+    it('with polling disabled, watchman true', function() {
+      subject.polling = function() { return false; };
+      subject.verbose = true;
+
+      subject.exec = function() { return Promise.resolve(); };
+
+      return subject.buildOptions().then(function(options) {
+        assert.deepEqual(options, {
+          polling:  false,
+          verbose:  true,
+          watchman: true
+        });
+      });
+    });
+
+   it('with polling disabled, watchman false, verbose false', function() {
+      subject.polling = function() { return false; };
+      subject.verbose = false;
+
+      subject.exec = function() { return Promise.resolve(); };
+      return subject.buildOptions().then(function(options) {
+        assert.deepEqual(options, {
+          polling:  false,
+          verbose:  false,
+          watchman: true
+        });
+      });
     });
   });
 
