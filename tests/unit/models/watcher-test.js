@@ -28,6 +28,8 @@ describe('Watcher', function() {
       builder: builder,
       watcher: watcher
     });
+
+    return subject;
   });
 
   describe('watcher strategy selection', function() {
