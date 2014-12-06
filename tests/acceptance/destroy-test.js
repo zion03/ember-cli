@@ -15,18 +15,33 @@ var root       = process.cwd();
 var tmp        = require('tmp-sync');
 var tmproot    = path.join(root, 'tmp');
 var EOL        = require('os').EOL;
+var Blueprint  = require('../../lib/models/blueprint');
+var originTaskFor = Blueprint.prototype.taskFor;
+var Promsie    = require('../../lib/ext/promise');
 
 describe('Acceptance: ember destroy', function() {
   var tmpdir;
 
   this.timeout(5000);
 
-
   before(function() {
+    Blueprint.prototype.taskFor = function(taskName) {
+      // we don't actually need to run the npm-install task, so lets mock it to
+      // speedup tests that need it
+      assert.equal(taskName, 'npm-install');
+
+      return {
+        run: function() {
+          return Promise.resolve();
+        }
+      };
+    };
+
     conf.setup();
   });
 
   after(function() {
+    Blueprint.prototype.taskFor = originTaskFor;
     conf.restore();
   });
 
@@ -43,7 +58,12 @@ describe('Acceptance: ember destroy', function() {
   });
 
   function initApp() {
-    return ember(['init', '--name=my-app', '--skip-npm', '--skip-bower']);
+    return ember([
+      'init',
+      '--name=my-app',
+      '--skip-npm',
+      '--skip-bower'
+    ]);
   }
 
   function generate(args) {
